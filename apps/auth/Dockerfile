@@ -30,4 +30,4 @@ RUN pnpm install --prod
 # We are copying the build we made from the development build command above and using it with the production dependencies
 COPY --from=development /usr/src/app/dist ./dist
 
-CMD ["node", "dist/apps/reservations/main"]
+CMD ["node", "dist/apps/auth/main"]
