@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser } from '@app/common';
 import { Response } from 'express';
-import { UserDocument } from './users/models/user.schema';
+import { UserDocument } from '@app/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 

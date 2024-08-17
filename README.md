@@ -71,3 +71,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+
+## Steps to push docker image to GCP
+- cd app/reservations and `docker build -t reservations -f ./Dockerfile ../../`. This will build the reservations microservice
+- Tag the microservice with the GCP artifact registry repository address ( copy it from the GCP dashboard ). `docker tag reservations asia-south1-docker.pkg.dev/biggle-ai/reservations/production`. Here production is the name of the image
+- Push the image to GCP - `docker image push asia-south1-docker.pkg.dev/biggle-ai/reservations/production`
