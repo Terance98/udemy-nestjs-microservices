@@ -1,6 +1,6 @@
 steps:
   # Reservations
-  - name: 'gcr.io/v2/cloud-builder/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       [
         'build',
@@ -10,12 +10,12 @@ steps:
         'apps/reservations/Dockerfile',
         '.',
       ]
-  - name: 'gcr.io/v2/cloud-builder/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       ['push', 'asia-south1-docker.pkg.dev/biggle-ai/reservations/production']
 
   # Auth
-  - name: 'gcr.io/v2/cloud-builder/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       [
         'build',
@@ -25,12 +25,12 @@ steps:
         'apps/auth/Dockerfile',
         '.',
       ]
-  - name: 'gcr.io/v2/cloud-builder/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       ['push', 'asia-south1-docker.pkg.dev/biggle-ai/auth/production']
 
   # Notifications
-  - name: 'gcr.io/v2/cloud-builder/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       [
         'build',
@@ -40,12 +40,12 @@ steps:
         'apps/notifications/Dockerfile',
         '.',
       ]
-  - name: 'gcr.io/v2/cloud-builder/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       ['push', 'asia-south1-docker.pkg.dev/biggle-ai/notifications/production']
 
   # Payments
-  - name: 'gcr.io/v2/cloud-builder/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       [
         'build',
@@ -55,7 +55,7 @@ steps:
         'apps/payments/Dockerfile',
         '.',
       ]
-  - name: 'gcr.io/v2/cloud-builder/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       ['push', 'asia-south1-docker.pkg.dev/biggle-ai/payments/production']
 
