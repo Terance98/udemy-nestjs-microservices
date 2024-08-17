@@ -60,5 +60,6 @@ steps:
       ['push', 'asia-south1-docker.pkg.dev/biggle-ai/payments/production']
 
 timeout: 1200s
-logging: CLOUD_LOGGING_ONLY  # or NONE
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
 serviceAccount: "861101961168-compute@developer.gserviceaccount.com"
