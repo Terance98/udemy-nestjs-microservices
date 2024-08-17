@@ -1,0 +1,60 @@
+steps:
+  # Reservations
+  - name: 'gcr.io/cloud-builder/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'asia-south1-docker.pkg.dev/biggle-ai/reservations/production',
+        '-f',
+        'apps/reservations/Dockerfile',
+        '.',
+      ]
+  - name: 'gcr.io/cloud-builder/docker'
+    args:
+      ['push', 'asia-south1-docker.pkg.dev/biggle-ai/reservations/production']
+
+  # Auth
+  - name: 'gcr.io/cloud-builder/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'asia-south1-docker.pkg.dev/biggle-ai/auth/production',
+        '-f',
+        'apps/auth/Dockerfile',
+        '.',
+      ]
+  - name: 'gcr.io/cloud-builder/docker'
+    args:
+      ['push', 'asia-south1-docker.pkg.dev/biggle-ai/auth/production']
+
+  # Notifications
+  - name: 'gcr.io/cloud-builder/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'asia-south1-docker.pkg.dev/biggle-ai/notifications/production',
+        '-f',
+        'apps/notifications/Dockerfile',
+        '.',
+      ]
+  - name: 'gcr.io/cloud-builder/docker'
+    args:
+      ['push', 'asia-south1-docker.pkg.dev/biggle-ai/notifications/production']
+
+  # Payments
+  - name: 'gcr.io/cloud-builder/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'asia-south1-docker.pkg.dev/biggle-ai/payments/production',
+        '-f',
+        'apps/payments/Dockerfile',
+        '.',
+      ]
+  - name: 'gcr.io/cloud-builder/docker'
+    args:
+      ['push', 'asia-south1-docker.pkg.dev/biggle-ai/payments/production']
