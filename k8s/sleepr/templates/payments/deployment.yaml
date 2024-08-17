@@ -17,3 +17,18 @@ spec:
       containers:
         - image: asia-south1-docker.pkg.dev/biggle-ai/payments/production
           name: production
+          env:
+            - name: PORT
+              value: '3001'
+            - name: NOTIFICATIONS_HOST
+              # 'notifications' is the name of the service we created on kubernetes
+              value: notifications
+            - name: NOTIFICATIONS_PORT
+              value: '3000'
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe
+                  key: apiKey
+          port:
+            - containerPort: 3001

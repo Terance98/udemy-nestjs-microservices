@@ -17,3 +17,22 @@ spec:
       containers:
         - image: asia-south1-docker.pkg.dev/biggle-ai/notifications/production
           name: production
+          env:
+            - name: PORT
+              value: '3000'
+            - name: GOOGLE_OAUTH_CLIENT_ID
+              value: 861101961168-8pt8h0f06sbs2e8a71ucpdle5kma6b45.apps.googleusercontent.com
+            - name: SMTP_USER
+              value: thomasterance98@gmail.com
+            - name: GOOGLE_OAUTH_CLIENT_SECRET
+              valueFrom: 
+                secretKeyRef:
+                  name: google
+                  key: clientSecret
+            - name: GOOGLE_OAUTH_REFRESH_TOKEN
+              valueFrom: 
+                secretKeyRef:
+                  name: google
+                  key: refreshToken
+          ports: 
+            - containerPort: 3000

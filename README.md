@@ -72,13 +72,14 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](LICENSE).
 
-
 ## Steps to push docker image to GCP
+
 - cd app/reservations and `docker build -t reservations -f ./Dockerfile ../../`. This will build the reservations microservice
 - Tag the microservice with the GCP artifact registry repository address ( copy it from the GCP dashboard ). `docker tag reservations asia-south1-docker.pkg.dev/biggle-ai/reservations/production`. Here production is the name of the image
 - Push the image to GCP - `docker image push asia-south1-docker.pkg.dev/biggle-ai/reservations/production`
 
 ## Steps to setup kubernetes
+
 - Make sure that Helm is installed and kubernetes engine is running via the docker desktop client.
 - Make a new folder named k8s in the root directory and cd into it. Then run `helm create sleepr`. This will create some boiler plate config for the kubernetes deployment. Remove everything from the templates folder and remove all the content from values.yaml as well.
 - `kubectl create deployment reservations --image=asia-south1-docker.pkg.dev/biggle-ai/reservations/production --dry-run=client -o yaml > deployment.yaml`. This will generate a deployment.yaml file that we can work with.
@@ -86,9 +87,27 @@ Nest is [MIT licensed](LICENSE).
 - Then run `helm install sleepr .` This will do the kubernetes deployment
 - But it will fail because we don't have the permissions to pull the docker image from GCP
 - For that go to API & Services in GCP -> Credentials -> Create Credentials -> Service Account -> Name it continue -> Artifact Registry Reader -> Done
-- The service account created will now be available under the API & Services tab under Service Accounts. Open it -> Keys -> Create key ( choose JSON ) -> Download it 
-- Run ```kubectl create secret docker-registry gcr-json-key --docker-server=asia-south1-docker.pkg.dev --docker-username=_json_key --docker-password="$(cat ~/Downloads/biggle-ai-c9174348d168.json)" --docker
--email=thomasterance98@gmail.com```. This command mainly contains the path to docker server ( available under setup instruction from Artifact Registry ) and also the path to the json key
+- The service account created will now be available under the API & Services tab under Service Accounts. Open it -> Keys -> Create key ( choose JSON ) -> Download it
+- Run `kubectl create secret docker-registry gcr-json-key --docker-server=asia-south1-docker.pkg.dev --docker-username=_json_key --docker-password="$(cat ~/Downloads/biggle-ai-c9174348d168.json)" --docker
+-email=thomasterance98@gmail.com`. This command mainly contains the path to docker server ( available under setup instruction from Artifact Registry ) and also the path to the json key
 - `kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'   `
 - `kubectl rollout restart deployment reservations`
-- It will fail again due to env variable issues
+- It will fail again due to env variable issues. But we will fix it in the following steps.
+- Continue the create deployment command from step 3 to continue creating deployment scripts for all the microservices within their corresponding folders
+- Navigate to the k8s/sleepr and run `helm upgrade sleepr .`
+- Run `kubectl get po` command to check if the kubernetes clusters have all started up. But it will still error and exit due to env variable issues
+- Run `kubectl create secret generic mongodb --from-literal=connectionString=mongodb+srv://connection_string`. This will setup the connection string as a secure secret variable inside the kubernetes
+- `kubectl get secrets` - will list out the secrets created so far.
+- `kubectl get secret mongodb -o yaml` - will display the secret but the content will be in hashed format
+- Add a few lines to point to this env variable in the deployment script under env key
+- Create few more env variables for the notifications service. `kubectl create secret generic google --from-literal=clientSecret=your_google_client_secret --from-literal=refreshToken=refresh_token`
+- Setup the env variables for the notifications service deployment.yaml script. Then run `helm upgrade sleepr .` && `kubectl get po`. This will list out all the pods and notifications service would be running fine.
+- We can check the logs of notifications service by `kubectl logs notification_service_name`. We can get the name for notifications service from the `kubectl get po` command.
+
+- `kubectl create service clusterip notifications --tcp=3000 --dry-run=client -o yaml > service.yaml`. This will create a service.yaml file that we can configure for the notifications service to establish TCP connectivity to it.
+- cd back to /sleepr and run `helm upgrade sleepr .` and `kubectl get svc`. We should be able to see notifications service now running at port 3000
+- Set the env variables for the rest of the services
+- `kubectl create service clusterip payments --tcp=3001 --dry-run=client -o yaml > service.yaml`. Setting up tcp connections for payments microservice. Make sure that the payments microservice is running before this.
+- `kubectl create service clusterip auth --tcp=3002,3003 --dry-run=client -o yaml > service.yam;`. Setting up open ports for tcp and http connections for auth microservice. Make sure auth microservice is running before this.
+- `helm upgrade sleepr .` - for it to take effect
+- `kubectl create service nodeport reservations --tcp=3004 --dry-run=client -o yaml > service.yaml`. This is another variation of create service command with `nodeport` method. This will expose the service to a specific port.
