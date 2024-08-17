@@ -77,3 +77,18 @@ Nest is [MIT licensed](LICENSE).
 - cd app/reservations and `docker build -t reservations -f ./Dockerfile ../../`. This will build the reservations microservice
 - Tag the microservice with the GCP artifact registry repository address ( copy it from the GCP dashboard ). `docker tag reservations asia-south1-docker.pkg.dev/biggle-ai/reservations/production`. Here production is the name of the image
 - Push the image to GCP - `docker image push asia-south1-docker.pkg.dev/biggle-ai/reservations/production`
+
+## Steps to setup kubernetes
+- Make sure that Helm is installed and kubernetes engine is running via the docker desktop client.
+- Make a new folder named k8s in the root directory and cd into it. Then run `helm create sleepr`. This will create some boiler plate config for the kubernetes deployment. Remove everything from the templates folder and remove all the content from values.yaml as well.
+- `kubectl create deployment reservations --image=asia-south1-docker.pkg.dev/biggle-ai/reservations/production --dry-run=client -o yaml > deployment.yaml`. This will generate a deployment.yaml file that we can work with.
+- After removing few unwanted keys from it, create a new folder named reservations under templates and move the deployment.yaml to it.
+- Then run `helm install sleepr .` This will do the kubernetes deployment
+- But it will fail because we don't have the permissions to pull the docker image from GCP
+- For that go to API & Services in GCP -> Credentials -> Create Credentials -> Service Account -> Name it continue -> Artifact Registry Reader -> Done
+- The service account created will now be available under the API & Services tab under Service Accounts. Open it -> Keys -> Create key ( choose JSON ) -> Download it 
+- Run ```kubectl create secret docker-registry gcr-json-key --docker-server=asia-south1-docker.pkg.dev --docker-username=_json_key --docker-password="$(cat ~/Downloads/biggle-ai-c9174348d168.json)" --docker
+-email=thomasterance98@gmail.com```. This command mainly contains the path to docker server ( available under setup instruction from Artifact Registry ) and also the path to the json key
+- `kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'   `
+- `kubectl rollout restart deployment reservations`
+- It will fail again due to env variable issues
