@@ -111,3 +111,5 @@ Nest is [MIT licensed](LICENSE).
 - `kubectl create service clusterip auth --tcp=3002,3003 --dry-run=client -o yaml > service.yam;`. Setting up open ports for tcp and http connections for auth microservice. Make sure auth microservice is running before this.
 - `helm upgrade sleepr .` - for it to take effect
 - `kubectl create service nodeport reservations --tcp=3004 --dry-run=client -o yaml > service.yaml`. This is another variation of create service command with `nodeport` method. This will expose the service to a specific port.
+
+- As of writing this Readme, the mongodb atlas server is timing out its connection in kubernetes server. So we have hard coded the local mongodb server url for now
