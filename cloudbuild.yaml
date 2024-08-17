@@ -58,3 +58,7 @@ steps:
   - name: 'gcr.io/cloud-builder/docker'
     args:
       ['push', 'asia-south1-docker.pkg.dev/biggle-ai/payments/production']
+
+timeout: 1200s
+logging: CLOUD_LOGGING_ONLY  # or NONE
+serviceAccount: "861101961168-compute@developer.gserviceaccount.com"
