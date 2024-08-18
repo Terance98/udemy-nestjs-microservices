@@ -89,7 +89,7 @@ Nest is [MIT licensed](LICENSE).
 - For that go to API & Services in GCP -> Credentials -> Create Credentials -> Service Account -> Name it continue -> Artifact Registry Reader -> Done
 - The service account created will now be available under the API & Services tab under Service Accounts. Open it -> Keys -> Create key ( choose JSON ) -> Download it
 - Run `kubectl create secret docker-registry gcr-json-key --docker-server=asia-south1-docker.pkg.dev --docker-username=_json_key --docker-password="$(cat ~/Downloads/biggle-ai-c9174348d168.json)" --docker
--email=thomasterance98@gmail.com`. This command mainly contains the path to docker server ( available under setup instruction from Artifact Registry ) and also the path to the json key
+-email=thomasterance98@gmail.com`. This command mainly contains the path to docker server ( available under setup instruction from Artifact Registry ) and also the path to the json key. This is done so that we have the permissions to pull docker images from GCP Artifact Registry into our local kubernetes engine.
 - `kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'   `
 - `kubectl rollout restart deployment reservations`
 - It will fail again due to env variable issues. But we will fix it in the following steps.
@@ -113,3 +113,37 @@ Nest is [MIT licensed](LICENSE).
 - `kubectl create service nodeport reservations --tcp=3004 --dry-run=client -o yaml > service.yaml`. This is another variation of create service command with `nodeport` method. This will expose the service to a specific port.
 
 - As of writing this Readme, the mongodb atlas server is timing out its connection in kubernetes server. So we have hard coded the local mongodb server url for now
+
+## Deploying to GCP Kubernetes Engine
+- Create a kubernetes egnine in GCP
+- `gcloud components install gke-gcloud-auth-plugin`
+- `gcloud container clusters get-credentials autopilot-cluster-1 --region asia-south1 --project biggle-ai`
+- `kubectl get nodes`
+- `kubectl get namespaces`
+- `kubectl get po -n kube-system`
+- cd into sleepr directory and `helm install sleepr .` This will setup all the kubernetes clusters in pending state
+- `kubectl get po`. Will list all the microservices as in pending state
+- `kubectl get nodes` will list out the nodes that have been setup for deployment
+- `kubectl get po`. Will list out the microservices again but all of them will be in error state since there are no env variables defined
+- `kubectl describe po auth-66fcbd684c-k5qtl`. The final value in the command is the value from the above command. This will show the error that occurred which is the monodb variable not found error
+- `kubectl config get-contexts`. This will list out the various contexts that are available. 
+- `kubectl config use-context docker-desktop`. This will checkout to the local context.
+- Make sure docker + kubernetes is running locally and run `kubectl get secrets`. This will list out the secrets that are available locally
+- `kubectl get secret stripe -o yaml > stripe.yaml`. This will export the stripe secret to a new file.
+- Repeat the process for the rest of the secrets
+- `kubectl config get-contexts`
+- `kubectl config use-context gke_biggle-ai_asia-south1_autopilot-cluster-1`. Switching back to the GCP Kubernetes Engine context to copy all the secrets to it
+- `kubectl create -f google.yaml`. This will copy the google secret to the new hosted cluster. Repeat the same process for the rest of the secrets
+- Once that is done.  `kubectl get po` will show all the services as running now.
+- Delete all the secrets that we just generated in to the files.
+- `kubectl logs auth-66fcbd684c-k5qtl` to ensure everything is running as expected
+- `kubectl get svc` to see the services are running either as TCP or NodePorts and their exposed PORTS as well
+
+
+- Next step is to setup ingress load balancer
+- Create a new file named `ingress.yaml` inside the templates folder
+- After filling it out, run `helm upgrade sleepr .`
+- After that if we go to GCP -> Kubernetes Engine -> Networking ( Gateway, Services and Ingress ) -> Ingress. We can see that the ingress is being created for our 2 services
+- Once the ingress is created, then run `kubectl get ing`. This will list out the public ip for the load balancer which we can use to communicate.
+- Give it some time to finish up the health checks before it can be actually useable. 
+- Test out the auth/login api to login with an already existing user and also /reservations to test creation of a reservation. The /users route won't work since it was not configured

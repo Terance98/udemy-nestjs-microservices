@@ -25,14 +25,14 @@ spec:
             - name: SMTP_USER
               value: thomasterance98@gmail.com
             - name: GOOGLE_OAUTH_CLIENT_SECRET
-              valueFrom: 
+              valueFrom:
                 secretKeyRef:
                   name: google
                   key: clientSecret
             - name: GOOGLE_OAUTH_REFRESH_TOKEN
-              valueFrom: 
+              valueFrom:
                 secretKeyRef:
                   name: google
                   key: refreshToken
-          ports: 
+          ports:
             - containerPort: 3000

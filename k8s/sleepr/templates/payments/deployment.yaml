@@ -30,5 +30,5 @@ spec:
                 secretKeyRef:
                   name: stripe
                   key: apiKey
-          port:
+          ports:
             - containerPort: 3001
