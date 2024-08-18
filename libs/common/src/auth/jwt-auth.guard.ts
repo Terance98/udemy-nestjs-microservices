@@ -20,7 +20,9 @@ export class JwtAuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     // The cookie-parser library needs to be configured in the main.ts file for all the microservices needs to use authentication since the token will be inside the cookie
-    const jwt = context.switchToHttp().getRequest().cookies?.Authentication;
+    const jwt =
+      context.switchToHttp().getRequest().cookies?.Authentication ||
+      context.switchToHttp().getRequest().headers?.authentication;
 
     if (!jwt) {
       return false;

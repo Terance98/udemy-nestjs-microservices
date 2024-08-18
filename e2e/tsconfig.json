@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "removeComments": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./"
+  },
+  "include": ["specs/**/*"]
+}
