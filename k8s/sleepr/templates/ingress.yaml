@@ -4,7 +4,7 @@ metadata:
   name: sleepr
   # !The annotations config is specific to AWS EKS and doesn't apply to GCP
   annotations:
-    alb.ingress.kubernetes.io/schema: internet-facing
+    alb.ingress.kubernetes.io/scheme: internet-facing
     kubernetes.io/ingress.class: alb
 spec:
   rules:

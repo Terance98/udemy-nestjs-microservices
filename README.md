@@ -180,9 +180,10 @@ Nest is [MIT licensed](LICENSE).
 - `kubectl create -f secrets.yaml`
 - Delete the secrets.yaml file
 - Use ` helm install sleepr .` if its the first time we are setting it up. Else use `helm upgrade sleepr .`
-- `kubectl get po` - will list out the containers as running
+- `kubectl get po` - will list out the containers as running. 
+- If any of the containers are in pending state check `kubectl describe po reservations-5ccbfb9c79-cf656`.
 - If any of the services are not running due to insufficient node groups then run `eksctl get nodegroups --cluster sleepr`
-- Run `eksctl scale nodegroup ng-1 -N 5 --cluster sleepr -M 5`
+- Run `eksctl scale nodegroup ng-1 -N 5 --cluster sleepr -M 5` && run `helm upgrade sleepr .`
 
 - Next step is to provision a load balancer to this cluster
 - Go to `https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/` to follow the steps to setup AWS load balancer controller
