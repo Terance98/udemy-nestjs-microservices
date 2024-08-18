@@ -147,3 +147,12 @@ Nest is [MIT licensed](LICENSE).
 - Once the ingress is created, then run `kubectl get ing`. This will list out the public ip for the load balancer which we can use to communicate.
 - Give it some time to finish up the health checks before it can be actually useable. 
 - Test out the auth/login api to login with an already existing user and also /reservations to test creation of a reservation. The /users route won't work since it was not configured
+
+
+## Deploying to AWS EKS 
+- Setup Elastic Container Registry
+- Setup aws cli
+- Run `aws configure`. Generate a new access key and provide its values
+- Go to ECR, then select a repository and "View push commands"
+- Follow through the commands except the build command. For that cd to apps/reservations and `docker build -t reservations -f ./Dockerfile ../../`
+- Setup the buildspec.yaml file
