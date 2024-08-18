@@ -222,3 +222,12 @@ Nest is [MIT licensed](LICENSE).
 - Allow some time for the ingress load balancer to set up with its external ip address
 - `kubectl get ing`
 - Meanwhile we can go to AWS -> EC2 -> Load Balancers -> See the list of load balancers that are provisioning/provisioned
+
+
+### Debugging
+- Checkout the update made in the start:debug command in root package.json
+- Make a few adjustments in the root docker-compose.yml file for the microservice we wish to debug. Here in this case we have chosen reservations
+- On the side nav of VsCode, choose Debug section and click "create a launch.json file" -> Choose Node.js as run time. Now a .vscode folder will be created with the launch.json file
+- Make updates to the launch.json
+- Then add break points within the code and start debugging session from the side nav -> Select "Run and Debug" -> Click "Start Debugging". 
+- Now as we continue through the break points we can see the status of different variables in the left pane 
