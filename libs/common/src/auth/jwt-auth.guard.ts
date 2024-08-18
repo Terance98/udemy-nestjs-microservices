@@ -3,19 +3,25 @@ import {
   ExecutionContext,
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { AUTH_SERVICE } from '../constants/services';
 import { ClientProxy } from '@nestjs/microservices';
 import { UserDto } from '@app/common';
+import { Reflector } from '@nestjs/core';
 
 /**
  * Basically when we inject an authClient with AUTH_SERVICE ( whose value is 'auth' ), that is basically the token a.k.a route through which we will be communicating to the auth microservice
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(@Inject(AUTH_SERVICE) private readonly authClient: ClientProxy) {}
+  private readonly logger = new Logger(JwtAuthGuard.name);
+  constructor(
+    @Inject(AUTH_SERVICE) private readonly authClient: ClientProxy,
+    private readonly reflector: Reflector,
+  ) {}
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
@@ -28,6 +34,8 @@ export class JwtAuthGuard implements CanActivate {
       return false;
     }
 
+    const roles = this.reflector.get<string[]>('roles', context.getHandler());
+
     /**
      * Here we are making a TCP request to the auth microservice
      * If we get the user data, then we are setting it onto the http request body using the rxjs tap() function
@@ -39,10 +47,22 @@ export class JwtAuthGuard implements CanActivate {
       })
       .pipe(
         tap((res) => {
+          if (roles) {
+            for (const role of roles) {
+              if (!res.roles?.includes(role)) {
+                this.logger.error('The user does not have valid roles.');
+                throw new UnauthorizedException();
+              }
+            }
+          }
+
           context.switchToHttp().getRequest().user = res;
         }),
         map(() => true),
-        catchError(() => of(false)), // If there is any error, we are sending a new custom observable with value as false
+        catchError((err) => {
+          this.logger.error(err);
+          return of(false);
+        }), // If there is any error, we are sending a new custom observable with value as false
       );
   }
 }
