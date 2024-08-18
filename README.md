@@ -115,6 +115,7 @@ Nest is [MIT licensed](LICENSE).
 - As of writing this Readme, the mongodb atlas server is timing out its connection in kubernetes server. So we have hard coded the local mongodb server url for now
 
 ## Deploying to GCP Kubernetes Engine
+
 - Create a kubernetes egnine in GCP
 - `gcloud components install gke-gcloud-auth-plugin`
 - `gcloud container clusters get-credentials autopilot-cluster-1 --region asia-south1 --project biggle-ai`
@@ -126,7 +127,7 @@ Nest is [MIT licensed](LICENSE).
 - `kubectl get nodes` will list out the nodes that have been setup for deployment
 - `kubectl get po`. Will list out the microservices again but all of them will be in error state since there are no env variables defined
 - `kubectl describe po auth-66fcbd684c-k5qtl`. The final value in the command is the value from the above command. This will show the error that occurred which is the monodb variable not found error
-- `kubectl config get-contexts`. This will list out the various contexts that are available. 
+- `kubectl config get-contexts`. This will list out the various contexts that are available.
 - `kubectl config use-context docker-desktop`. This will checkout to the local context.
 - Make sure docker + kubernetes is running locally and run `kubectl get secrets`. This will list out the secrets that are available locally
 - `kubectl get secret stripe -o yaml > stripe.yaml`. This will export the stripe secret to a new file.
@@ -134,25 +135,89 @@ Nest is [MIT licensed](LICENSE).
 - `kubectl config get-contexts`
 - `kubectl config use-context gke_biggle-ai_asia-south1_autopilot-cluster-1`. Switching back to the GCP Kubernetes Engine context to copy all the secrets to it
 - `kubectl create -f google.yaml`. This will copy the google secret to the new hosted cluster. Repeat the same process for the rest of the secrets
-- Once that is done.  `kubectl get po` will show all the services as running now.
+- Once that is done. `kubectl get po` will show all the services as running now.
 - Delete all the secrets that we just generated in to the files.
 - `kubectl logs auth-66fcbd684c-k5qtl` to ensure everything is running as expected
 - `kubectl get svc` to see the services are running either as TCP or NodePorts and their exposed PORTS as well
-
 
 - Next step is to setup ingress load balancer
 - Create a new file named `ingress.yaml` inside the templates folder
 - After filling it out, run `helm upgrade sleepr .`
 - After that if we go to GCP -> Kubernetes Engine -> Networking ( Gateway, Services and Ingress ) -> Ingress. We can see that the ingress is being created for our 2 services
 - Once the ingress is created, then run `kubectl get ing`. This will list out the public ip for the load balancer which we can use to communicate.
-- Give it some time to finish up the health checks before it can be actually useable. 
+- Give it some time to finish up the health checks before it can be actually useable.
 - Test out the auth/login api to login with an already existing user and also /reservations to test creation of a reservation. The /users route won't work since it was not configured
 
+## Deploying to AWS EKS
 
-## Deploying to AWS EKS 
 - Setup Elastic Container Registry
 - Setup aws cli
 - Run `aws configure`. Generate a new access key and provide its values
 - Go to ECR, then select a repository and "View push commands"
 - Follow through the commands except the build command. For that cd to apps/reservations and `docker build -t reservations -f ./Dockerfile ../../`
 - Setup the buildspec.yaml file
+- Setup a CodePipeline for CI/CD. Setup a new code pipeline, choose github v2, connect to github account and choose the repository. Under trigger choose "No Filter".
+- Follow through and select the repo and branch. Click Next. Create a new project. Give a project name. Under buildspec, choose -> use a buildspec file. Then continue through
+- Click next and choose skip deploy stage -> Create Pipeline
+- A build will start automatically and it might error due to permission issues. To fix that, go to IAM -> Roles ->
+  codebuild-sleepr-service-role -> Add permissions -> Search for ecr -> Select EC2InstanceProfileForImageBuilderECRContainerBuilds -> Click add permissions
+- To deploy again, go to code pipeline -> Release change
+- Once the code build is done, new images would be available under each repository of ECR
+- For EKS, install eksctl. Follow the installation steps to get it installed
+- `eksctl get clusters` - will return no clusters found since we haven't created.
+- Copy the cluster.yaml file template from the getting started page for eksctl
+- cd into sleepr directory and save the file as cluster.yaml inside the project root directory. Make a few updates to it as required. Also setup its schema.
+- Run `eksctl create cluster -f ./cluster.yaml`. This will create a cluster and start setting up the nodes. It might take up to 15 mins to set it all up.
+- `kubectl get nodes` - to list out the nodes
+- `eksctl get nodegroups --cluster sleepr` - Will show the node groups which we have set as 3.
+- Now update all deployment scripts to point to the docker image from the ECR. Get the urls from buildspec.yaml file
+- Now we need to move all the secrets to the EKS.
+- `kubectl config use-context docker-desktop` - this will switch to the local context
+- `kubectl get secrets - yaml > secrets.yaml` - this will export the secrets to a secrets.yaml file.
+- Remove the gcr_json_key from the secrets.yaml file
+- `kubectl config get-contexts`
+- `kubectl config use-context iam-root-account@sleepr.us-east-1.eksctl.io`
+- `kubectl create -f secrets.yaml`
+- Delete the secrets.yaml file
+- Use ` helm install sleepr .` if its the first time we are setting it up. Else use `helm upgrade sleepr .`
+- `kubectl get po` - will list out the containers as running
+- If any of the services are not running due to insufficient node groups then run `eksctl get nodegroups --cluster sleepr`
+- Run `eksctl scale nodegroup ng-1 -N 5 --cluster sleepr -M 5`
+
+- Next step is to provision a load balancer to this cluster
+- Go to `https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/` to follow the steps to setup AWS load balancer controller
+- Go Deployment section -> Configure IAM -> Option A
+- Following are the list of commands executed. For the second command choose "If your cluster is in any other region:" from the document
+- ````eksctl utils associate-iam-oidc-provider
+    --region us-east-1 \
+    --cluster sleepr \
+    --approve```
+  ````
+- `curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.8.2/docs/install/iam_policy.json`
+- ````aws iam create-policy
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam-policy.json```
+  ````
+- ````eksctl create iamserviceaccount
+    --cluster=sleepr \
+    --namespace=kube-system \
+    --name=aws-load-balancer-controller \
+    --attach-policy-arn=arn:aws:iam::555812340215:policy/AWSLoadBalancerControllerIAMPolicy \
+    --override-existing-serviceaccounts \
+    --region us-east-1 \
+    --approve```
+  ````
+- Move to the summary section in the documentation
+- `helm repo add eks https://aws.github.io/eks-charts`
+- ````wget https://raw.githubusercontent.com/aws/eks-charts/master/stable/aws-load-balancer-controller/crds/crds.yaml
+  kubectl apply -f crds.yaml```
+  ````
+- `helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=sleepr --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller`
+- `kubectl get po -n kube-system`. This will show the load balancers that are running.
+- `kubectl logs aws-load-balancer-controller-67b98f6ff5-dmhq9 -n kube-system --follow` - will show the logs of the AWS load balancer controller that is running now
+- Delete the temporary `iam-policy.json` that was created
+- Update the ingress.yaml file to add annotations config.
+- `helm upgrade sleepr .`
+- Allow some time for the ingress load balancer to set up with its external ip address
+- `kubectl get ing`
+- Meanwhile we can go to AWS -> EC2 -> Load Balancers -> See the list of load balancers that are provisioning/provisioned

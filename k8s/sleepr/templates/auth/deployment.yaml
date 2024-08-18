@@ -15,7 +15,8 @@ spec:
         app: auth
     spec:
       containers:
-        - image: asia-south1-docker.pkg.dev/biggle-ai/auth/production
+        # - image: asia-south1-docker.pkg.dev/biggle-ai/auth/production # GCP Image address
+        - image: 555812340215.dkr.ecr.us-east-1.amazonaws.com/auth:latest # AWS Image address
           name: auth
           env:
             - name: MONGODB_URI

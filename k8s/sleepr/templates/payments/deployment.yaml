@@ -15,8 +15,9 @@ spec:
         app: payments
     spec:
       containers:
-        - image: asia-south1-docker.pkg.dev/biggle-ai/payments/production
-          name: production
+        # - image: asia-south1-docker.pkg.dev/biggle-ai/payments/production # GCP Image address
+        - image: 555812340215.dkr.ecr.us-east-1.amazonaws.com/payments:latest # AWS Image address
+          name: payments
           env:
             - name: PORT
               value: '3001'

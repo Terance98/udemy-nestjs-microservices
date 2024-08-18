@@ -2,6 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: sleepr
+  # !The annotations config is specific to AWS EKS and doesn't apply to GCP
+  annotations:
+    alb.ingress.kubernetes.io/schema: internet-facing
+    kubernetes.io/ingress.class: alb
 spec:
   rules:
     - http:

@@ -15,7 +15,8 @@ spec:
         app: reservations
     spec:
       containers:
-        - image: asia-south1-docker.pkg.dev/biggle-ai/reservations/production
+        # - image: asia-south1-docker.pkg.dev/biggle-ai/reservations/production # GCP Image address
+        - image: 555812340215.dkr.ecr.us-east-1.amazonaws.com/reservations:latest # AWS Image address
           name: reservations
           env:
             - name: MONGODB_URI

@@ -15,8 +15,9 @@ spec:
         app: notifications
     spec:
       containers:
-        - image: asia-south1-docker.pkg.dev/biggle-ai/notifications/production
-          name: production
+        # - image: asia-south1-docker.pkg.dev/biggle-ai/notifications/production # GCP Image address
+        - image: 555812340215.dkr.ecr.us-east-1.amazonaws.com/notifications:latest # AWS Image address
+          name: notifications
           env:
             - name: PORT
               value: '3000'
