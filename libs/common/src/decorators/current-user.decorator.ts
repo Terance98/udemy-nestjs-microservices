@@ -1,8 +1,8 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { UserDocument } from '@app/common/models/user.schema';
+import { User } from '@app/common';
 
 // We are able to get the user from the http request, since passport local strategy is injecting it into the request object
-const getCurrentUserByContext = (context: ExecutionContext): UserDocument => {
+const getCurrentUserByContext = (context: ExecutionContext): User => {
   return context.switchToHttp().getRequest().user;
 };
 

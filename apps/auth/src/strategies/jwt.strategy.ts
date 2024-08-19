@@ -34,6 +34,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * Then we return the user document, so this will get attached to the request object
    */
   async validate({ userId }: TokenPayload) {
-    return this.userService.getUser({ _id: userId });
+    return this.userService.getUser({ id: userId });
   }
 }

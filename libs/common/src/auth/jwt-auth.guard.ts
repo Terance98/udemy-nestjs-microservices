@@ -9,7 +9,7 @@ import {
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { AUTH_SERVICE } from '../constants/services';
 import { ClientProxy } from '@nestjs/microservices';
-import { UserDto } from '@app/common';
+import { User } from '@app/common';
 import { Reflector } from '@nestjs/core';
 
 /**
@@ -42,14 +42,14 @@ export class JwtAuthGuard implements CanActivate {
      * If we get a successful response from the RPC call, then we use the rxjs map() function to return true. This value will be returned to the canActivate function which will allow the http request to proceed
      */
     return this.authClient
-      .send<UserDto>('authenticate', {
+      .send<User>('authenticate', {
         Authentication: jwt,
       })
       .pipe(
         tap((res) => {
           if (roles) {
             for (const role of roles) {
-              if (!res.roles?.includes(role)) {
+              if (!res.roles?.map((role) => role.name).includes(role)) {
                 this.logger.error('The user does not have valid roles.');
                 throw new UnauthorizedException();
               }

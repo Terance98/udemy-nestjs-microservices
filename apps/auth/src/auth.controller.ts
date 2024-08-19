@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser } from '@app/common';
 import { Response } from 'express';
-import { UserDocument } from '@app/common';
+import { User } from '@app/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -14,7 +14,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
     /**
      * If we set pass through as true, then we have to manually send out a response from the API
      * We are using this so that the we can return the JWT token as a http cookie which is more secure than sending it as a plain text
