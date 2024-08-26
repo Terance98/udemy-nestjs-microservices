@@ -223,6 +223,11 @@ Nest is [MIT licensed](LICENSE).
 - `kubectl get ing`
 - Meanwhile we can go to AWS -> EC2 -> Load Balancers -> See the list of load balancers that are provisioning/provisioned
 
+### Deleting EKS instance on AWS
+- The deletion of an EKS instance on AWS is very difficult to do if done manually
+- Take time to search and delete all the associated elements. This includes the EKS cluster, EC2 machines, cloud formation scripts that re-spin up the EC2 machines, NAT gateways, Internet gateways, Elastic IPs, VPC etc.
+- Analyze for 2 days and delete other resources as well if required
+
 
 ### Debugging
 - Checkout the update made in the start:debug command in root package.json
